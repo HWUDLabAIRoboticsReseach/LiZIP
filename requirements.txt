@@ -11,8 +11,3 @@ open3d
 nuscenes-devkit
 DracoPy
 laspy
-
-# Documentation
-sphinx
-myst-parser
-furo
