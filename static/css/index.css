@@ -1,0 +1,170 @@
+body {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.publication-title {
+  font-family: 'Google Sans', sans-serif;
+  font-weight: 700;
+}
+
+.publication-authors {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.publication-authors a {
+  color: #1a73e8;
+}
+
+.publication-authors a:hover {
+  color: #174ea6;
+}
+
+.publication-unis {
+  font-family: 'Google Sans', sans-serif;
+  color: #555;
+  margin-top: 0.4em;
+}
+
+.publication-unis a {
+  color: #555;
+}
+
+.publication-unis a:hover {
+  color: #1a73e8;
+}
+
+.publication-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.publication-links .link-block {
+  display: inline-block;
+}
+
+footer.footer {
+  background-color: #f5f5f5;
+  padding: 3rem 1.5rem;
+}
+
+/* ── Results table ─────────────────────────────────────────────────────── */
+table.custom-table {
+  border-collapse: collapse;
+  font-family: sans-serif;
+  font-size: 13px;
+  width: 100%;
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  white-space: nowrap;
+}
+
+table.custom-table th,
+table.custom-table td {
+  padding: 6px 14px;
+  text-align: center !important;
+}
+
+table.custom-table td[style*="text-align:left"],
+table.custom-table td[style*="text-align: left"],
+table.custom-table th[style*="text-align:left"],
+table.custom-table th[style*="text-align: left"] {
+  text-align: left !important;
+}
+
+table.custom-table th {
+  border-bottom: 1px solid #000;
+}
+
+table.custom-table td.highlight {
+  background-color: #CCF2FF;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ── Compression pipeline flow ─────────────────────────────────────────── */
+.pipeline-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 1.5em 0;
+}
+
+.pipeline-step-wrap {
+  flex: 1 1 150px;
+  min-width: 140px;
+  max-width: 240px;
+}
+
+.pipeline-box {
+  border: 2px solid #00a1d7;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.pipeline-box-title {
+  background-color: #00a1d7;
+  color: white;
+  padding: 4px 10px;
+  font-size: 0.82em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.pipeline-box-body {
+  background-color: #ebfbff;
+  color: #0a7ea6;
+  padding: 8px 10px;
+  font-size: 0.78em;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.pipeline-arrow-wrap {
+  display: flex;
+  align-items: center;
+  padding-top: 20px;
+  flex: 0 0 auto;
+}
+
+.pipeline-arrow-sym {
+  color: #00a1d7;
+  font-size: 1.4em;
+}
+
+@media (max-width: 768px) {
+  .pipeline-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pipeline-step-wrap {
+    max-width: 100%;
+  }
+
+  .pipeline-arrow-wrap {
+    justify-content: center;
+    padding-top: 0;
+    transform: rotate(90deg);
+  }
+}
+
+/* ── Code blocks in cards ──────────────────────────────────────────────── */
+.card pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85em;
+  margin: 0;
+}
+
+.card code {
+  background: transparent;
+  padding: 0;
+}
