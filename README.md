@@ -1,9 +1,11 @@
 # LiZIP: An Auto-Regressive Compression Framework for LiDAR Point Clouds
 
 [![CI](https://github.com/HWUDLabAIRoboticsResearch/LiZIP/actions/workflows/ci.yml/badge.svg)](https://github.com/HWUDLabAIRoboticsResearch/LiZIP/actions/workflows/ci.yml)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
 
 This repo is the official code base for **LiZIP**, a lightweight near-lossless compression framework for LiDAR point clouds based on neural predictive coding. The project website is [here](https://hwudlabairoboticsresearch.github.io/LiZIP/).
 
