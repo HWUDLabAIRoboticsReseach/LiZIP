@@ -1,6 +1,11 @@
 # LiZIP: An Auto-Regressive Compression Framework for LiDAR Point Clouds
 
-This repo is the official code base for **LiZIP**, a lightweight near-lossless compression framework for LiDAR point clouds based on neural predictive coding. The project website is [here](https://hwudlabairoboticsreseach.github.io/LiZIP/).
+[![CI](https://github.com/HWUDLabAIRoboticsResearch/LiZIP/actions/workflows/ci.yml/badge.svg)](https://github.com/HWUDLabAIRoboticsResearch/LiZIP/actions/workflows/ci.yml)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+
+This repo is the official code base for **LiZIP**, a lightweight near-lossless compression framework for LiDAR point clouds based on neural predictive coding. The project website is [here](https://hwudlabairoboticsresearch.github.io/LiZIP/).
 
 <div align="center">
   <img src="benchmark/gifs/error_heatmap_lizip.gif" width="30%" alt="Reconstruction Error (LiZIP)" style="margin: 0 1.5%;"/>
@@ -30,7 +35,7 @@ This repo is the official code base for **LiZIP**, a lightweight near-lossless c
 ### Installation
 
 ```bash
-git clone https://github.com/HWUDLabAIRoboticsReseach/LiZIP
+git clone https://github.com/HWUDLabAIRoboticsResearch/LiZIP
 cd LiZIP
 pip install -r requirements.txt
 ```

@@ -9,12 +9,13 @@ on:
 jobs:
   # ── C++ backend ────────────────────────────────────────────────────────────
   cpp-backend:
-    name: "C++ | ${{ matrix.fixture }}"
+    name: "C++ | py${{ matrix.python-version }} | ${{ matrix.fixture }}"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
+        python-version: ['3.10', '3.11', '3.12']
         fixture:
           - sample_nuscenes.bin
           - sample_argo_315978406019574000.bin
@@ -56,7 +57,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
         run: pip install numpy scipy colorama
@@ -74,12 +75,13 @@ jobs:
 
   # ── Python backend ─────────────────────────────────────────────────────────
   python-backend:
-    name: "Python | ${{ matrix.fixture }}"
+    name: "Python | py${{ matrix.python-version }} | ${{ matrix.fixture }}"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
+        python-version: ['3.10', '3.11', '3.12']
         fixture:
           - sample_nuscenes.bin
           - sample_argo_315978406019574000.bin
@@ -110,7 +112,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
         run: |
