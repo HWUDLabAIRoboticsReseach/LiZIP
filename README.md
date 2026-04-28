@@ -3,9 +3,9 @@
 This repo is the official code base for **LiZIP**, a lightweight near-lossless compression framework for LiDAR point clouds based on neural predictive coding. The project website is [here](https://hwudlabairoboticsreseach.github.io/LiZIP/).
 
 <div align="center">
-  <img src="benchmark/gifs/error_heatmap_lizip.gif" width="30%" alt="Reconstruction Error (LiZIP)"/>
-  <img src="benchmark/gifs/error_heatmap_laszip.gif" width="30%" alt="Reconstruction Error (LASzip)"/>
-  <img src="benchmark/gifs/error_heatmap_draco.gif" width="30%" alt="Reconstruction Error (Draco)"/>
+  <img src="benchmark/gifs/error_heatmap_lizip.gif" width="30%" alt="Reconstruction Error (LiZIP)" style="margin: 0 1.5%;"/>
+  <img src="benchmark/gifs/error_heatmap_laszip.gif" width="30%" alt="Reconstruction Error (LASzip)" style="margin: 0 1.5%;"/>
+  <img src="benchmark/gifs/error_heatmap_draco.gif" width="30%" alt="Reconstruction Error (Draco)" style="margin: 0 1.5%;"/>
 </div>
 
 ---
