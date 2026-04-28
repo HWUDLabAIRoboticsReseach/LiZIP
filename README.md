@@ -100,7 +100,7 @@ pip install imageio
 ## Citation
 
 ```bibtex
-@misc{shibu2026lizipautoregressivecompressionframework,
+@misc{LiZIP,
       title={LiZIP: An Auto-Regressive Compression Framework for LiDAR Point Clouds},
       author={Aditya Shibu and Kayvan Karim and Claudio Zito},
       year={2026},
