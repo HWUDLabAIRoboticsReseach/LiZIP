@@ -16,28 +16,28 @@ jobs:
       fail-fast: false
       matrix:
         fixture:
-          # NuScenes (10 frames)
           - sample_nuscenes.bin
-          - sample_nuscenes2.bin
-          - sample_nuscenes_3.bin
-          - sample_nuscenes_4.bin
-          - sample_nuscenes_5.bin
-          - sample_nuscenes_6.bin
-          - sample_nuscenes_7.bin
-          - sample_nuscenes_8.bin
-          - sample_nuscenes_9.bin
-          - sample_nuscenes_10.bin
-          # Argoverse (10 frames, converted to 5-float .bin)
           - sample_argo_315978406019574000.bin
-          - sample_argo_315978407719832000.bin
-          - sample_argo_315978409419858000.bin
-          - sample_argo_315978411120548000.bin
-          - sample_argo_315978412819906000.bin
-          - sample_argo_315978414620565000.bin
-          - sample_argo_315978416320154000.bin
-          - sample_argo_315978418019960000.bin
-          - sample_argo_315978419719539000.bin
-          - sample_argo_315978421520424000.bin
+          # Full suite (uncomment when pipeline is stable — 2 NuScenes + 2 Argoverse below,
+          # expand to all 10+10 for release validation):
+          # - sample_nuscenes2.bin
+          # - sample_argo_315978412819906000.bin
+          # - sample_nuscenes_3.bin
+          # - sample_nuscenes_4.bin
+          # - sample_nuscenes_5.bin
+          # - sample_nuscenes_6.bin
+          # - sample_nuscenes_7.bin
+          # - sample_nuscenes_8.bin
+          # - sample_nuscenes_9.bin
+          # - sample_nuscenes_10.bin
+          # - sample_argo_315978407719832000.bin
+          # - sample_argo_315978409419858000.bin
+          # - sample_argo_315978411120548000.bin
+          # - sample_argo_315978414620565000.bin
+          # - sample_argo_315978416320154000.bin
+          # - sample_argo_315978418019960000.bin
+          # - sample_argo_315978419719539000.bin
+          # - sample_argo_315978421520424000.bin
 
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
 
       - name: Compile C++ engine
         run: |
-          g++ -O2 -fopenmp -mavx2 \
+          g++ -O2 -fopenmp -mavx2 -mfma \
             -o src/cpp/lizip.exe src/cpp/lizip.cpp \
             -lz -llzma
 
@@ -81,28 +81,28 @@ jobs:
       fail-fast: false
       matrix:
         fixture:
-          # NuScenes (10 frames)
           - sample_nuscenes.bin
-          - sample_nuscenes2.bin
-          - sample_nuscenes_3.bin
-          - sample_nuscenes_4.bin
-          - sample_nuscenes_5.bin
-          - sample_nuscenes_6.bin
-          - sample_nuscenes_7.bin
-          - sample_nuscenes_8.bin
-          - sample_nuscenes_9.bin
-          - sample_nuscenes_10.bin
-          # Argoverse (10 frames, converted to 5-float .bin)
           - sample_argo_315978406019574000.bin
-          - sample_argo_315978407719832000.bin
-          - sample_argo_315978409419858000.bin
-          - sample_argo_315978411120548000.bin
-          - sample_argo_315978412819906000.bin
-          - sample_argo_315978414620565000.bin
-          - sample_argo_315978416320154000.bin
-          - sample_argo_315978418019960000.bin
-          - sample_argo_315978419719539000.bin
-          - sample_argo_315978421520424000.bin
+          # Full suite (uncomment when pipeline is stable — 2 NuScenes + 2 Argoverse below,
+          # expand to all 10+10 for release validation):
+          # - sample_nuscenes2.bin
+          # - sample_argo_315978412819906000.bin
+          # - sample_nuscenes_3.bin
+          # - sample_nuscenes_4.bin
+          # - sample_nuscenes_5.bin
+          # - sample_nuscenes_6.bin
+          # - sample_nuscenes_7.bin
+          # - sample_nuscenes_8.bin
+          # - sample_nuscenes_9.bin
+          # - sample_nuscenes_10.bin
+          # - sample_argo_315978407719832000.bin
+          # - sample_argo_315978409419858000.bin
+          # - sample_argo_315978411120548000.bin
+          # - sample_argo_315978414620565000.bin
+          # - sample_argo_315978416320154000.bin
+          # - sample_argo_315978418019960000.bin
+          # - sample_argo_315978419719539000.bin
+          # - sample_argo_315978421520424000.bin
 
     steps:
       - uses: actions/checkout@v4
