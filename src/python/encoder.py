@@ -6,9 +6,9 @@ import time
 import zlib
 import lzma
 
-from model import PointPredictorMLP
-from data_loader import load_point_cloud
-from voxel_sort import voxel_quantize_and_sort
+from .model import PointPredictorMLP
+from ..utils.data_loader import load_point_cloud
+from .voxel_sort import voxel_quantize_and_sort
 
 MODEL_PATH = "models/mlp_v1.pth"
 INPUT_FILE = "data/nuScenes/LIDAR_TOP/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151604247644.pcd.bin"

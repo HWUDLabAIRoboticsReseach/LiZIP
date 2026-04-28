@@ -45,11 +45,17 @@ def load_python_model(pth_path):
     import torch
     from src import PointPredictorMLP
 
-    checkpoint = torch.load(pth_path, map_location="cpu")
-    context_size = checkpoint.get("context_size", 3)
-    hidden_dim = checkpoint.get("hidden_dim", 256)
+    checkpoint = torch.load(pth_path, map_location="cpu", weights_only=False)
+    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+        state_dict   = checkpoint["model_state_dict"]
+        context_size = checkpoint.get("context_size", 3)
+        hidden_dim   = checkpoint.get("hidden_dim", 256)
+    else:
+        state_dict   = checkpoint
+        context_size = 3
+        hidden_dim   = 256
     model = PointPredictorMLP(context_size=context_size, hidden_dim=hidden_dim)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
@@ -69,7 +75,7 @@ def cmd_encode(args):
         model = load_python_model(pth_path)
         encode_file_closed_loop(args.input, args.output, model, compression=args.compression)
         size = os.path.getsize(args.output)
-        print(f"Encoded → {args.output} ({size:,} bytes)")
+        print(f"Encoded -> {args.output} ({size:,} bytes)")
 
 
 def cmd_decode(args):
@@ -86,7 +92,7 @@ def cmd_decode(args):
         pth_path = args.model or DEFAULT_MODEL_PTH
         model = load_python_model(pth_path)
         decode_file(args.input, args.output, model)
-        print(f"Decoded → {args.output}")
+        print(f"Decoded -> {args.output}")
 
 
 def cmd_benchmark(args):
