@@ -19,7 +19,7 @@ jobs:
         fixture:
           - sample_nuscenes.bin
           - sample_argo_315978406019574000.bin
-          # Full suite (uncomment when pipeline is stable — 2 NuScenes + 2 Argoverse below,
+
           # expand to all 10+10 for release validation):
           # - sample_nuscenes2.bin
           # - sample_argo_315978412819906000.bin
@@ -85,7 +85,7 @@ jobs:
         fixture:
           - sample_nuscenes.bin
           - sample_argo_315978406019574000.bin
-          # Full suite (uncomment when pipeline is stable — 2 NuScenes + 2 Argoverse below,
+
           # expand to all 10+10 for release validation):
           # - sample_nuscenes2.bin
           # - sample_argo_315978412819906000.bin
