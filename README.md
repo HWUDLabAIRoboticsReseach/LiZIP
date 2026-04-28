@@ -77,23 +77,6 @@ python main.py benchmark --dataset nuscenes --frames 100 --mode dual
 
 ---
 
-## Models
-
-Nine pre-trained `PointPredictorMLP` variants are provided under `models/grid_search/`, covering three context sizes (k = 3, 5, 8) and three hidden dimensions (H = 256, 512, 1024). Each variant ships as both a PyTorch `.pth` checkpoint and a self-contained `.bin` binary (LIZM format) for the C++ engine.
-
-| k | H    | Encode (s) | Size (KB) | Error (mm) |
-|---|------|-----------|-----------|------------|
-| **3** | **256** | **0.19** | **185.41** | **0.010** |
-| 3 | 512  | 0.31      | —         | —          |
-| 3 | 1024 | 1.06      | —         | —          |
-| 5 | 256  | 0.18      | 186.17    | —          |
-| 5 | 1024 | 1.03      | —         | —          |
-| 8 | 1024 | 1.23      | 184.50    | —          |
-
-The default model is `mlp_c3_h256` (bold above).
-
----
-
 ## Visualisation Tools
 
 Generate the GIFs shown above from any NuScenes `.bin` file:
