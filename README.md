@@ -23,6 +23,7 @@ This repo is the official code base for **LiZIP**, a lightweight near-lossless c
 - **8.8%–11.3%** smaller than Google Draco (24-bit precision baseline) while keeping reconstruction error ≤ 0.017 mm vs. Draco's 0.033–0.070 mm.
 - **38%–48%** smaller than GZip — a 3.8× compression ratio on a typical NuScenes frame (683.9 KB raw → 184.8 KB).
 - Runs entirely on **CPU** (~75 ms/frame, C++ backend with AVX2 + OpenMP). No GPU required at inference time.
+- On **NVIDIA Jetson** (AGX Orin), CUDA voxel sort + TensorRT inference drops encode time to **~60 ms/frame** — auto-detected at runtime.
 - Generalises to the unseen **Argoverse** dataset without retraining.
 
 ---
@@ -80,6 +81,54 @@ Reports Chamfer distance, Hausdorff distance, and p95/p99 nearest-neighbour erro
 
 ```bash
 python main.py benchmark --dataset nuscenes --frames 100 --mode dual
+```
+
+---
+
+## Jetson CUDA Acceleration (TensorRT)
+
+LiZIP auto-detects NVIDIA Jetson hardware at runtime and switches to the TensorRT + CUDA path. Pre-built models for the AGX Orin are in `models/jetson/`. If you need to rebuild or re-export:
+
+### 1. Export the PyTorch model to ONNX
+
+```bash
+python scripts/export_onnx.py
+```
+
+### 2. Compile the TensorRT engine
+
+```bash
+/usr/src/tensorrt/bin/trtexec \
+    --onnx=models/jetson/mlp_c3_h256.onnx \
+    --saveEngine=models/jetson/mlp_c3_h256.engine \
+    --fp16 \
+    --minShapes=input:1x9 \
+    --optShapes=input:512x9 \
+    --maxShapes=input:2048x9
+```
+
+### 3. Build the Jetson C++ engine
+
+```bash
+cd src/cpp/jetson
+make
+```
+
+This produces `src/cpp/jetson/lizip`, which is used automatically when running on Jetson.
+
+### 4. Run
+
+No extra flags needed — the Jetson binary and engine are selected automatically:
+
+```bash
+python main.py encode input.bin output.lizip --mode cpp
+python main.py benchmark --dataset nuscenes --frames 100 --mode cpp
+```
+
+To force a specific engine:
+
+```bash
+python main.py encode input.bin output.lizip --mode cpp --model models/jetson/mlp_c3_h256.engine
 ```
 
 ---
