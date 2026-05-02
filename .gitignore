@@ -218,5 +218,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Graphs
+# VSC
+.vscode/
 
