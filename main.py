@@ -171,7 +171,7 @@ def build_parser():
     enc.add_argument("output", help="Output compressed file (.lizip)")
     enc.add_argument("--mode", choices=["python", "cpp"], default="python", help="Encoder backend (default: python)")
     enc.add_argument("--model", metavar="PATH", help="Model file (.pth for python, .bin for cpp)")
-    enc.add_argument("--compression", choices=["zlib", "lzma"], default="zlib", help="Entropy codec (default: zlib)")
+    enc.add_argument("--compression", choices=["zlib", "lzma", "zstd"], default="zlib", help="Entropy codec (default: zlib)")
 
     # decode
     dec = sub.add_parser("decode", help="Decompress a .lizip file", formatter_class=fmt)

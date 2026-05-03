@@ -6,7 +6,7 @@ CXXFLAGS = -O3 -fopenmp -std=c++17
 NVCCFLAGS = -O3 -std=c++17 --generate-code arch=compute_87,code=sm_87 
 INCLUDES = -I/usr/local/cuda/include -I/usr/include/aarch64-linux-gnu
 LDFLAGS = -L/usr/local/cuda/lib64 -L/usr/lib/aarch64-linux-gnu
-LIBS = -lz -llzma -lcudart -lnvinfer
+LIBS = -lz -llzma -lzstd -lcudart -lnvinfer
 
 SRC_CPP = lizip.cpp
 SRC_CU = cuda_sort.cu

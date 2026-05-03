@@ -116,20 +116,22 @@ def plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name=
     methods = [m for m in enc_results.keys() if m != 'GZip']
     
     colors = {
-        'LiZIP (Python, zlib)': 'red', 
+        'LiZIP (Python, zlib)': 'red',
         'LiZIP (Python, lzma)': 'orange',
         'LiZIP (C++, zlib)': 'darkred',
         'LiZIP (C++, lzma)': 'blue',
-        'Draco': 'skyblue', 
+        'LiZIP (C++, zstd)': 'purple',
+        'Draco': 'skyblue',
         'Laszip': 'green',
         'GZip': 'gray'
     }
     markers = {
-        'LiZIP (Python, zlib)': 'o', 
+        'LiZIP (Python, zlib)': 'o',
         'LiZIP (Python, lzma)': 'v',
         'LiZIP (C++, zlib)': 's',
         'LiZIP (C++, lzma)': 'D',
-        'Draco': 'x', 
+        'LiZIP (C++, zstd)': '*',
+        'Draco': 'x',
         'Laszip': 'p',
         'GZip': '^'
     }
@@ -258,7 +260,7 @@ def main():
     if args.mode in ['python', 'dual']:
         methods += ["LiZIP (Python, zlib)", "LiZIP (Python, lzma)"]
     if args.mode in ['cpp', 'dual']:
-        methods += ["LiZIP (C++, zlib)", "LiZIP (C++, lzma)"]
+        methods += ["LiZIP (C++, zlib)", "LiZIP (C++, lzma)", "LiZIP (C++, zstd)"]
         
     methods += ["Draco", "Laszip", "GZip"]
     
@@ -319,7 +321,7 @@ def main():
             t_enc, b_stats = run_cpp_lizip("e", fpath, p_cpp_l, args.bin, compression="lzma")
             enc_results["LiZIP (C++, lzma)"].append(t_enc)
             breakdowns.append(b_stats)
-            
+
             p_rec = p_cpp_l + ".rec.bin"
             t_dec, _ = run_cpp_lizip("d", p_cpp_l, p_rec, args.bin)
             dec_results["LiZIP (C++, lzma)"].append(t_dec)
@@ -329,6 +331,22 @@ def main():
                 errors["LiZIP (C++, lzma)"].append(calculate_max_error(gt_points_raw, rec_pts))
                 os.remove(p_rec)
             os.remove(p_cpp_l)
+
+        if "LiZIP (C++, zstd)" in methods:
+            # zstd
+            p_cpp_zs = os.path.join(OUTPUT_DIR, f"{fname}.cpp.zstd.lizip")
+            t_enc, _ = run_cpp_lizip("e", fpath, p_cpp_zs, args.bin, compression="zstd")
+            enc_results["LiZIP (C++, zstd)"].append(t_enc)
+
+            p_rec = p_cpp_zs + ".rec.bin"
+            t_dec, _ = run_cpp_lizip("d", p_cpp_zs, p_rec, args.bin)
+            dec_results["LiZIP (C++, zstd)"].append(t_dec)
+            sizes["LiZIP (C++, zstd)"].append(os.path.getsize(p_cpp_zs) / 1024.0)
+            if os.path.exists(p_rec):
+                rec_pts = np.fromfile(p_rec, dtype=np.float32).reshape((-1, 3))
+                errors["LiZIP (C++, zstd)"].append(calculate_max_error(gt_points_raw, rec_pts))
+                os.remove(p_rec)
+            os.remove(p_cpp_zs)
 
         # --- Baselines ---
         # Draco

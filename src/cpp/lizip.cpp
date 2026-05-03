@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <zlib.h>
 #include <lzma.h>
+#include <zstd.h>
 #ifdef __AVX2__
 #include <immintrin.h>
 #endif
@@ -245,6 +246,25 @@ std::vector<uint8_t> compress_lzma(const std::vector<uint8_t>& src) {
     return dst;
 }
 
+std::vector<uint8_t> compress_zstd(const std::vector<uint8_t>& src, int level = 6, int num_threads = 4) {
+    ZSTD_CCtx* ctx = ZSTD_createCCtx();
+    ZSTD_CCtx_setParameter(ctx, ZSTD_c_compressionLevel, level);
+    ZSTD_CCtx_setParameter(ctx, ZSTD_c_nbWorkers, num_threads);
+    std::vector<uint8_t> dst(ZSTD_compressBound(src.size()));
+    size_t out_size = ZSTD_compress2(ctx, dst.data(), dst.size(), src.data(), src.size());
+    ZSTD_freeCCtx(ctx);
+    if (ZSTD_isError(out_size)) return {};
+    dst.resize(out_size);
+    return dst;
+}
+
+std::vector<uint8_t> decompress_zstd(const uint8_t* src, size_t src_len, size_t expected_len) {
+    std::vector<uint8_t> dst(expected_len);
+    size_t out_size = ZSTD_decompress(dst.data(), dst.size(), src, src_len);
+    if (ZSTD_isError(out_size)) return {};
+    return dst;
+}
+
 std::vector<uint8_t> decompress_lzma(const uint8_t* src, size_t src_len, size_t expected_len) {
     std::vector<uint8_t> dst(expected_len);
     size_t in_pos = 0;
@@ -270,7 +290,7 @@ struct LizipHeader {
 
 int main(int argc, char** argv) {
     if (argc < 4) {
-        std::cerr << "LiZIP Pure C++ Engine\nUsage: lizip <e|d> <input> <output> [model.bin] [zlib|lzma|none]\n";
+        std::cerr << "LiZIP Pure C++ Engine\nUsage: lizip <e|d> <input> <output> [model.bin] [zlib|lzma|zstd|none]\n";
         return 1;
     }
 
@@ -392,6 +412,9 @@ int main(int argc, char** argv) {
         } else if (comp_method == "zlib") {
             s1_size = compress_zlib(stage1_data).size();
             s2_size = compress_zlib(stage2_data).size();
+        } else if (comp_method == "zstd") {
+            s1_size = compress_zstd(stage1_data).size();
+            s2_size = compress_zstd(stage2_data).size();
         }
 
         std::vector<uint8_t> compressed;
@@ -402,6 +425,9 @@ int main(int argc, char** argv) {
         } else if (comp_method == "lzma") {
             compressed = compress_lzma(raw_payload);
             comp_id = 2;
+        } else if (comp_method == "zstd") {
+            compressed = compress_zstd(raw_payload);
+            comp_id = 3;
         } else {
             compressed = raw_payload;
             comp_id = 0;
@@ -474,6 +500,8 @@ int main(int argc, char** argv) {
             raw_payload = decompress_zlib(compressed.data(), compressed.size(), expected_raw);
         } else if (h.comp_id == 2) {
             raw_payload = decompress_lzma(compressed.data(), compressed.size(), expected_raw);
+        } else if (h.comp_id == 3) {
+            raw_payload = decompress_zstd(compressed.data(), compressed.size(), expected_raw);
         } else {
             raw_payload = compressed;
         }

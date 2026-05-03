@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <zlib.h>
 #include <lzma.h>
+#include <zstd.h>
 #include <queue>
 #include <thread>
 #include <mutex>
@@ -234,6 +235,25 @@ std::vector<uint8_t> compress_lzma(const std::vector<uint8_t>& src) {
     return dst;
 }
 
+std::vector<uint8_t> compress_zstd(const std::vector<uint8_t>& src, int level = 6, int num_threads = 4) {
+    ZSTD_CCtx* ctx = ZSTD_createCCtx();
+    ZSTD_CCtx_setParameter(ctx, ZSTD_c_compressionLevel, level);
+    ZSTD_CCtx_setParameter(ctx, ZSTD_c_nbWorkers, num_threads);
+    std::vector<uint8_t> dst(ZSTD_compressBound(src.size()));
+    size_t out_size = ZSTD_compress2(ctx, dst.data(), dst.size(), src.data(), src.size());
+    ZSTD_freeCCtx(ctx);
+    if (ZSTD_isError(out_size)) return {};
+    dst.resize(out_size);
+    return dst;
+}
+
+std::vector<uint8_t> decompress_zstd(const uint8_t* src, size_t src_len, size_t expected_len) {
+    std::vector<uint8_t> dst(expected_len);
+    size_t out_size = ZSTD_decompress(dst.data(), dst.size(), src, src_len);
+    if (ZSTD_isError(out_size)) return {};
+    return dst;
+}
+
 std::vector<uint8_t> decompress_lzma(const uint8_t* src, size_t src_len, size_t expected_len) {
     std::vector<uint8_t> dst(expected_len);
     size_t in_pos = 0, out_pos = 0;
@@ -332,12 +352,14 @@ void encode_frame_pipelined(FrameData& frame, const PointPredictor& model, float
             std::vector<uint8_t> pay = s_h; pay.insert(pay.end(), s_r.begin(), s_r.end());
             if (comp_method == "zlib") return compress_zlib(pay);
             if (comp_method == "lzma") return compress_lzma(pay);
+            if (comp_method == "zstd") return compress_zstd(pay);
             return pay;
         }));
     }
 
     std::ofstream out(frame.out_path, std::ios::binary);
-    LizipHeader h; memcpy(h.magic, "LIZP", 4); h.comp_id = (comp_method == "zlib" ? 1 : (comp_method == "lzma" ? 2 : 0));
+    LizipHeader h; memcpy(h.magic, "LIZP", 4);
+    h.comp_id = (comp_method == "zlib" ? 1 : (comp_method == "lzma" ? 2 : (comp_method == "zstd" ? 3 : 0)));
     memset(h.reserved, 0, 3); h.reserved[0] = (uint8_t)CONTEXT; h.num_points = n; h.num_blocks = nb; h.scale = SCALE; h.type_flag = 3;
     out.write((char*)&h, sizeof(h));
     for (auto& task : entropy_tasks) {
@@ -359,7 +381,7 @@ void encode_frame_pipelined(FrameData& frame, const PointPredictor& model, float
 }
 
 int main(int argc, char** argv) {
-    if (argc < 4) { std::cerr << "LiZIP Pure C++ Engine (Pipelined)\nUsage: lizip <e|d> <input> <output> [model.bin] [zlib|lzma|none]\n"; return 1; }
+    if (argc < 4) { std::cerr << "LiZIP Pure C++ Engine (Pipelined)\nUsage: lizip <e|d> <input> <output> [model.bin] [zlib|lzma|zstd|none]\n"; return 1; }
     std::string mode = argv[1], in_path = argv[2], out_path = argv[3];
     std::string model_path = (argc > 4) ? argv[4] : "models/mlp.bin";
     std::string comp_method = (argc > 5) ? argv[5] : "lzma";
@@ -387,6 +409,7 @@ int main(int argc, char** argv) {
             std::vector<uint8_t> raw_p;
             if (h.comp_id == 1) raw_p = decompress_zlib(comp_c.data(), c_size, exp_raw);
             else if (h.comp_id == 2) raw_p = decompress_lzma(comp_c.data(), c_size, exp_raw);
+            else if (h.comp_id == 3) raw_p = decompress_zstd(comp_c.data(), c_size, exp_raw);
             else raw_p = comp_c;
             const uint8_t* p_h = raw_p.data(), * p_r = p_h + (current_nb * CONTEXT * 3 * 4);
             auto h_d = unshuffle_bytes(p_h, current_nb * CONTEXT * 3);
