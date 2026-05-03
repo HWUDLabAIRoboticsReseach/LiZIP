@@ -1,0 +1,4 @@
+src/utils/* linguist-detectable=false
+scripts/* linguist-detectable=false
+benchmark/* linguist-detectable=false
+main.py linguist-detectable=false
