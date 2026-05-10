@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import subprocess
 import re
+import psutil
 from tqdm import tqdm
 from scipy.spatial import cKDTree
 
@@ -36,6 +37,14 @@ MODEL_BIN = os.path.join(PROJECT_ROOT, "models", "jetson", "mlp_c3_h256.engine")
 CONTEXT_SIZE = 3
 HIDDEN_DIM = 256
 TOTAL_FRAMES = 100
+
+def get_gpu_util():
+    """Read GPU utilization % from Jetson sysfs (sysfs reports 0–1000)."""
+    try:
+        with open('/sys/devices/platform/gpu.0/load', 'r') as f:
+            return float(f.read().strip()) / 10.0
+    except OSError:
+        return 0.0
 
 def get_lidar_dir(dataset_name):
     if dataset_name.lower() == 'kitti':
@@ -105,7 +114,7 @@ def calculate_max_error(gt_points, rec_points):
         print(f"Error in KDTree calc: {e}")
         return 99999.0
 
-def plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name="NuScenes", breakdown_stats=None):
+def plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name="NuScenes", breakdown_stats=None, cpu_utils=None, gpu_utils=None):
     START_FRAME = 3
     
     num_frames_total = len(next(iter(enc_results.values())))
@@ -184,6 +193,38 @@ def plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name=
     plt.grid(True, alpha=0.3, which='both')
     plt.legend()
     plt.savefig(os.path.join(SCRIPT_DIR, "graphs", "pipeline_error.png"))
+
+    if cpu_utils:
+        plt.figure(figsize=(12, 6))
+        for m in methods:
+            if m not in cpu_utils or not cpu_utils[m]:
+                continue
+            vals = np.array(cpu_utils[m][START_FRAME:])
+            display_label = f"{m} (Ours)" if "LiZIP" in m else m
+            plt.plot(x_axis[:len(vals)], vals, label=display_label, color=colors.get(m, 'black'), marker=markers.get(m, '.'))
+        plt.title(f"CPU Utilization per Frame ({ds_display})")
+        plt.xlabel("Frame Index")
+        plt.ylabel("CPU Utilization (%)")
+        plt.ylim(0, 100)
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+        plt.savefig(os.path.join(SCRIPT_DIR, "graphs", "pipeline_cpu_util.png"))
+
+    if gpu_utils:
+        plt.figure(figsize=(12, 6))
+        for m in methods:
+            if m not in gpu_utils or not gpu_utils[m]:
+                continue
+            vals = np.array(gpu_utils[m][START_FRAME:])
+            display_label = f"{m} (Ours)" if "LiZIP" in m else m
+            plt.plot(x_axis[:len(vals)], vals, label=display_label, color=colors.get(m, 'black'), marker=markers.get(m, '.'))
+        plt.title(f"GPU Utilization per Frame ({ds_display})")
+        plt.xlabel("Frame Index")
+        plt.ylabel("GPU Utilization (%)")
+        plt.ylim(0, 100)
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+        plt.savefig(os.path.join(SCRIPT_DIR, "graphs", "pipeline_gpu_util.png"))
 
     if breakdown_stats:
         plt.figure(figsize=(10, 6))
@@ -268,14 +309,19 @@ def main():
     dec_results = {k: [] for k in methods}
     errors = {k: [] for k in methods}
     sizes = {k: [] for k in methods}
+    cpu_utils = {k: [] for k in methods}
+    gpu_utils = {k: [] for k in methods}
     breakdowns = []
-    
+
+    psutil.cpu_percent()
+
     ensure_dir(OUTPUT_DIR)
 
     for i, fpath in tqdm(enumerate(files), total=len(files), desc="Pipeline Progress", unit="frame"):
         fname = os.path.splitext(os.path.basename(fpath))[0]
         gt_points_raw = load_point_cloud(fpath)[:, :3]
-        
+        psutil.cpu_percent()
+
         # --- Python Implementation ---
         if "LiZIP (Python, zlib)" in methods:
             # zlib
@@ -286,6 +332,8 @@ def main():
             dec_results["LiZIP (Python, zlib)"].append(t_dec)
             sizes["LiZIP (Python, zlib)"].append(os.path.getsize(p_py_z) / 1024.0)
             errors["LiZIP (Python, zlib)"].append(calculate_max_error(gt_points_raw, pts))
+            cpu_utils["LiZIP (Python, zlib)"].append(psutil.cpu_percent())
+            gpu_utils["LiZIP (Python, zlib)"].append(get_gpu_util())
             os.remove(p_py_z)
             
         if "LiZIP (Python, lzma)" in methods:
@@ -297,6 +345,8 @@ def main():
             dec_results["LiZIP (Python, lzma)"].append(t_dec)
             sizes["LiZIP (Python, lzma)"].append(os.path.getsize(p_py_l) / 1024.0)
             errors["LiZIP (Python, lzma)"].append(calculate_max_error(gt_points_raw, pts))
+            cpu_utils["LiZIP (Python, lzma)"].append(psutil.cpu_percent())
+            gpu_utils["LiZIP (Python, lzma)"].append(get_gpu_util())
             os.remove(p_py_l)
 
         # --- C++ Implementation ---
@@ -313,6 +363,8 @@ def main():
                 rec_pts = np.fromfile(p_rec, dtype=np.float32).reshape((-1, 3))
                 errors["LiZIP (C++, zlib)"].append(calculate_max_error(gt_points_raw, rec_pts))
                 os.remove(p_rec)
+            cpu_utils["LiZIP (C++, zlib)"].append(psutil.cpu_percent())
+            gpu_utils["LiZIP (C++, zlib)"].append(get_gpu_util())
             os.remove(p_cpp_z)
 
         if "LiZIP (C++, lzma)" in methods:
@@ -330,6 +382,8 @@ def main():
                 rec_pts = np.fromfile(p_rec, dtype=np.float32).reshape((-1, 3))
                 errors["LiZIP (C++, lzma)"].append(calculate_max_error(gt_points_raw, rec_pts))
                 os.remove(p_rec)
+            cpu_utils["LiZIP (C++, lzma)"].append(psutil.cpu_percent())
+            gpu_utils["LiZIP (C++, lzma)"].append(get_gpu_util())
             os.remove(p_cpp_l)
 
         if "LiZIP (C++, zstd)" in methods:
@@ -346,6 +400,8 @@ def main():
                 rec_pts = np.fromfile(p_rec, dtype=np.float32).reshape((-1, 3))
                 errors["LiZIP (C++, zstd)"].append(calculate_max_error(gt_points_raw, rec_pts))
                 os.remove(p_rec)
+            cpu_utils["LiZIP (C++, zstd)"].append(psutil.cpu_percent())
+            gpu_utils["LiZIP (C++, zstd)"].append(get_gpu_util())
             os.remove(p_cpp_zs)
 
         # --- Baselines ---
@@ -357,6 +413,8 @@ def main():
         dec_results["Draco"].append(t_dec)
         sizes["Draco"].append(os.path.getsize(p_d) / 1024.0)
         errors["Draco"].append(calculate_max_error(gt_points_raw, pts))
+        cpu_utils["Draco"].append(psutil.cpu_percent())
+        gpu_utils["Draco"].append(get_gpu_util())
         os.remove(p_d)
 
         # Laszip
@@ -367,6 +425,8 @@ def main():
         dec_results["Laszip"].append(t_dec)
         sizes["Laszip"].append(os.path.getsize(p_l) / 1024.0)
         errors["Laszip"].append(calculate_max_error(gt_points_raw, pts))
+        cpu_utils["Laszip"].append(psutil.cpu_percent())
+        gpu_utils["Laszip"].append(get_gpu_util())
         os.remove(p_l)
 
         # GZip
@@ -377,18 +437,22 @@ def main():
         dec_results["GZip"].append(t_dec)
         sizes["GZip"].append(os.path.getsize(p_g) / 1024.0)
         errors["GZip"].append(calculate_max_error(gt_points_raw, pts))
+        cpu_utils["GZip"].append(psutil.cpu_percent())
+        gpu_utils["GZip"].append(get_gpu_util())
         os.remove(p_g)
 
-    plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name=args.dataset, breakdown_stats=breakdowns)
-    
+    plot_pipeline_results(enc_results, dec_results, errors, sizes, dataset_name=args.dataset, breakdown_stats=breakdowns, cpu_utils=cpu_utils, gpu_utils=gpu_utils)
+
     print("\nFinal Performance Summary (100% of frames):")
-    print("-" * 115)
-    print(f"{ 'Method':<25} | {'Total Time (s)':<20} | {'Size (KB)':<20} | {'Max Error (mm)':<20}")
-    print("-" * 115)
+    print("-" * 150)
+    print(f"{'Method':<25} | {'Total Time (s)':<22} | {'Size (KB)':<22} | {'Max Error (mm)':<18} | {'Avg CPU (%)':<14} | {'Avg GPU (%)':<12}")
+    print("-" * 150)
     for m in methods:
         tot = np.array(enc_results[m]) + np.array(dec_results[m])
-        print(f"{m:<25} | {np.mean(tot):.4f} +/- {np.std(tot):.4f}  | {np.mean(sizes[m]):.2f} +/- {np.std(sizes[m]):.2f}    | {np.mean(errors[m]):.4f}")
-    print("-" * 115)
+        avg_cpu = np.mean(cpu_utils[m]) if cpu_utils[m] else 0.0
+        avg_gpu = np.mean(gpu_utils[m]) if gpu_utils[m] else 0.0
+        print(f"{m:<25} | {np.mean(tot):.4f} +/- {np.std(tot):.4f}   | {np.mean(sizes[m]):.2f} +/- {np.std(sizes[m]):.2f}     | {np.mean(errors[m]):.4f}           | {avg_cpu:.1f}           | {avg_gpu:.1f}")
+    print("-" * 150)
 
 if __name__ == "__main__":
     main()
